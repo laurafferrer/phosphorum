@@ -3,15 +3,25 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { IThread, IThreadPage } from '../model/model.interfaces';
 import { API_URL } from 'src/environment/environment';
+import { WebsocketService } from './websocket.service';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+  })
 export class ThreadAjaxService {
 
     sUrl: string = API_URL + "/thread";
 
     constructor(
-        private oHttpClient: HttpClient
-    ) { }
+        private oHttpClient: HttpClient,
+        private websocketService: WebsocketService
+    ) { 
+        this.setupWebsocket();
+    }
+
+    private setupWebsocket() {
+        this.websocketService.connect();
+    }
 
     getOne(id: number): Observable<IThread> {
         return this.oHttpClient.get<IThread>(this.sUrl + "/" + id);

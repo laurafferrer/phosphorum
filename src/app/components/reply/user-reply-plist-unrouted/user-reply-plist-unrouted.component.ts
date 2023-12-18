@@ -13,6 +13,7 @@ import { SessionAjaxService } from 'src/app/service/session.ajax.service.ts.serv
 import { UserReplyFormUnroutedComponent } from '../user-reply-form-unrouted/user-reply-form-unrouted.component';
 import { UserThreadFormUnroutedComponent } from '../../thread/user-thread-form-unrouted/user-thread-form-unrouted.component';
 import { TranslocoService } from '@ngneat/transloco';
+import { WebsocketService } from 'src/app/service/websocket.service';
 
 @Component({
   providers: [ConfirmationService],
@@ -72,7 +73,8 @@ export class UserReplyPlistUnroutedComponent implements OnInit {
     public oDialogService: DialogService,
     private oConfirmationService: ConfirmationService,
     private oMatSnackBar: MatSnackBar,
-    private oTranslocoService: TranslocoService
+    private oTranslocoService: TranslocoService,
+    private oWebSocketService: WebsocketService
   ) { }
 
   ngOnInit() {
@@ -82,6 +84,31 @@ export class UserReplyPlistUnroutedComponent implements OnInit {
     }
     if (this.id_thread > 0) {
       this.getThread();
+    }
+
+    // Suscríbete a los mensajes del WebSocket
+    this.oWebSocketService.getMessages().subscribe((message) => {
+      console.log('Mensaje desde el servidor', message);
+
+      // Aquí puedes realizar acciones en respuesta a los mensajes del servidor
+      if (message.type === 'someMessageType') {
+        this.handleSomeMessageType(message.data);
+      }
+    });
+  }
+
+  // Método para manejar un tipo específico de mensaje
+  handleSomeMessageType(data: any): void {
+    if (data.type === 'updateThread') {
+      // Ejemplo: Actualizar la lista de respuestas cuando se recibe un mensaje de actualización de hilo
+      console.log('Recibido mensaje de actualización de hilo:', data);
+      this.getPage(); // Vuelve a cargar la lista de respuestas
+    } else if (data.type === 'someOtherType') {
+      // Otras acciones para otros tipos de mensajes
+      console.log('Recibido otro tipo de mensaje:', data);
+      // Realiza las acciones necesarias con los datos recibidos
+    } else {
+      console.log('Tipo de mensaje no reconocido:', data.type);
     }
   }
 

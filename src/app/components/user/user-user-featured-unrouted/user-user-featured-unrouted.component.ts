@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { PaginatorState } from 'primeng/paginator';
 import { IUser, IUserPage } from 'src/app/model/model.interfaces';
 import { UserAjaxService } from 'src/app/service/user.ajax.service.service';
+import { WebsocketService } from 'src/app/service/websocket.service';
 
 @Component({
   selector: 'app-user-user-featured-unrouted',
@@ -18,24 +19,29 @@ export class UserUserFeaturedUnroutedComponent implements OnInit {
   oUserToRemove: IUser | null = null;
 
   constructor(
-    private oUserAjaxService: UserAjaxService,
+    private oWebsocketService: WebsocketService,
   ) { }
 
   ngOnInit() {
-    this.getPage();
+    this.setupWebsocket();
   }
 
-  getPage(): void {
-    this.oUserAjaxService.getPageByRepliesNumberDesc(this.oPaginatorState.rows, this.oPaginatorState.page).subscribe({
-      next: (data: IUserPage) => {
-        this.oPage = data;
-        this.oPaginatorState.pageCount = data.totalPages;
-        console.log(this.oPaginatorState);
-      },
-      error: (error: HttpErrorResponse) => {
-        this.status = error;
+
+  private setupWebsocket(): void {
+    this.oWebsocketService.getMessages().subscribe((message) =>{
+      console.log('Mensaje desde el servidor', message);
+       // Actualiza la interfaz de usuario según el tipo de mensaje recibido
+       if (message.type === 'updateUserList') {
+        // Ejemplo: Actualizar la lista de usuarios
+        this.oPage = message.data as IUserPage; // Asegúrate de que el mensaje contenga la información necesaria
+      } else if (message.type === 'removeUser') {
+        // Ejemplo: Remover un usuario de la lista
+        const userIdToRemove = message.data.userId; // Asegúrate de que el mensaje contenga la información necesaria
+        if (this.oPage) {
+          this.oPage.content = this.oPage.content.filter(u => u.id !== userIdToRemove);
+        }
       }
-    })
+    });
   }
 
 }
