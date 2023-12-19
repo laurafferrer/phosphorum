@@ -19,37 +19,9 @@ export class HomeRoutedComponent implements OnInit {
   private socket$: WebSocketSubject<any>;
 
   constructor() {
-
     this.socket$ = webSocket('ws://localhost:8083/ws');
+    this.subscribeToWebSocket();
 
-    this.socket$.subscribe(
-      (message: WebSocketMessage) => {
-        // Handle incoming WebSocket messages
-        console.log('WebSocket message received:', message);
-    
-        // Example: Trigger a thread reload when a message is received
-        if (message.type === 'threadUpdate') {
-          this.reloadThreads.next(true);
-        }
-      },
-      (error: WebSocketErrorEvent) => {
-        console.error('WebSocket error:', error);
-      },
-      () => {
-        console.log('WebSocket connection closed');
-      }
-    );
-
-    // Define los tipos para los mensajes WebSocket
-    interface WebSocketMessage {
-      type: string;
-      // Agrega otros campos según la estructura de tus mensajes
-    }
-
-    // Define el tipo para eventos de error WebSocket
-    interface WebSocketErrorEvent extends Event {
-      error: any;
-    }
    }
 
   ngOnInit() {
@@ -72,4 +44,38 @@ export class HomeRoutedComponent implements OnInit {
     this.socket$.complete();
   }
 
+  // Función para suscribirse a los mensajes WebSocket
+  private subscribeToWebSocket(): void {
+    this.socket$.subscribe(
+      {
+        next: (message: WebSocketMessage) => {
+          // Manejar mensajes WebSocket entrantes
+          console.log('WebSocket message received:', message);
+  
+          // Ejemplo: Disparar una recarga de hilos cuando se recibe un mensaje
+          if (message.type === 'threadUpdate') {
+            this.reloadThreads.next(true);
+          }
+        },
+        error: (error: WebSocketErrorEvent) => {
+          console.error('WebSocket error:', error);
+        },
+        complete: () => {
+          console.log('WebSocket connection closed');
+        }
+      }
+    );
+  }
+  
+}
+
+// Define los tipos para los mensajes WebSocket fuera del constructor
+interface WebSocketMessage {
+  type: string;
+  // Agrega otros campos según la estructura de tus mensajes
+}
+
+// Define el tipo para eventos de error WebSocket fuera del constructor
+interface WebSocketErrorEvent extends Event {
+  error: any;
 }

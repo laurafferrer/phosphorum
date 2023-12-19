@@ -74,7 +74,7 @@ import { UserReplyPlistUnroutedComponent } from './components/reply/user-reply-p
 import { UserReplyDetailUnroutedComponent } from './components/reply/user-reply-detail-unrouted/user-reply-detail-unrouted.component';
 import { UserReplyFormUnroutedComponent } from './components/reply/user-reply-form-unrouted/user-reply-form-unrouted.component';
 import { TranslocoRootModule } from './transloco-root.module';
-
+import { WebSocketModule } from './websocket.module';
 
 //--
 @NgModule({
@@ -149,6 +149,7 @@ import { TranslocoRootModule } from './transloco-root.module';
     MatToolbarModule,
     MatIconModule,
     TranslocoRootModule,
+    WebSocketModule,
     //--
   ],
   providers: [
