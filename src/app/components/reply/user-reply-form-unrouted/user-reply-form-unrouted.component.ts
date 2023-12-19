@@ -23,6 +23,8 @@ export class UserReplyFormUnroutedComponent implements OnInit {
   id_thread: number = 0;
   operation: formOperation = 'NEW'; // new or edit
 
+  private webSocket!: WebSocket;
+
   constructor(
     private formBuilder: FormBuilder,
     private oReplyAjaxService: ReplyAjaxService,
@@ -52,6 +54,7 @@ export class UserReplyFormUnroutedComponent implements OnInit {
       }
     }
     this.initializeForm(this.oReply);
+    this.setupWebSocket();
 
   }
 
@@ -91,6 +94,37 @@ export class UserReplyFormUnroutedComponent implements OnInit {
     return this.replyForm.controls[controlName].hasError(errorName);
   }
 
+  private setupWebSocket(): void {
+    const wsUrl = 'ws://localhost:8083/ws';
+    this.webSocket = new WebSocket(wsUrl);
+
+    this.webSocket.onopen = (event) => {
+      console.log('WebSocket connection opened:', event);
+      // You can send a message when the WebSocket connection is opened
+      // this.webSocket.send('Hello WebSocket!');
+    };
+
+    this.webSocket.onmessage = (event) => {
+      console.log('WebSocket message received:', event.data);
+      // Handle incoming WebSocket messages here
+    };
+
+    this.webSocket.onclose = (event) => {
+      console.log('WebSocket connection closed:', event);
+    };
+
+    this.webSocket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+  }
+
+  ngOnDestroy() {
+    // Close WebSocket connection when the component is destroyed
+    if (this.webSocket) {
+      this.webSocket.close();
+    }
+  }
+
   onSubmit() {
     if (this.replyForm.valid) {
       if (this.operation == 'NEW') {
@@ -119,6 +153,12 @@ export class UserReplyFormUnroutedComponent implements OnInit {
             this.matSnackBar.open(this.oTranslocoService.translate('global.the.fem') + ' ' + this.oTranslocoService.translate('reply.lowercase.singular') + ' ' + this.oTranslocoService.translate('global.update.has.fem') + '.', '', { duration: 2000 });
           }
         });
+      }
+      const message = 'Form submitted!';
+      if (this.webSocket.readyState === WebSocket.OPEN) {
+        this.webSocket.send(message);
+      } else {
+        console.error('WebSocket connection not open.');
       }
     }
   }

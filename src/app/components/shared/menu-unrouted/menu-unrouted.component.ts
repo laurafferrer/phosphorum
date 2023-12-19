@@ -9,7 +9,7 @@ import { NavigationEnd, Router } from '@angular/router';
 import { TranslocoService } from '@ngneat/transloco';
 import { Language } from 'src/app/model/model.interfaces';
 import { LanguageService } from 'src/app/service/language.service';
-import { WebsocketService } from 'src/app/service/websocket.service';
+import { webSocket, WebSocketSubject } from 'rxjs/webSocket'; // Import WebSocket-related modules
 
 @Component({
   selector: 'app-menu-unrouted',
@@ -25,14 +25,15 @@ export class MenuUnroutedComponent implements OnInit {
   languages: Language[] = [];
   selectedLanguage: Language | null = null;
 
+  private socket$: WebSocketSubject<SessionEvent>; // WebSocket subject
+
   constructor(
     private oSessionService: SessionAjaxService,
     public oDialogService: DialogService,
     private oUserAjaxService: UserAjaxService,
     private oRouter: Router,
     private oTranslocoService: TranslocoService,
-    private oLanguageService: LanguageService,
-    private oWebSocketService: WebsocketService
+    private oLanguageService: LanguageService
   ) {
 
     this.oRouter.events.subscribe((ev) => {
@@ -51,34 +52,8 @@ export class MenuUnroutedComponent implements OnInit {
       }
     });
 
-    // Suscríbete a los mensajes del WebSocket
-    this.oWebSocketService.getMessages().subscribe((message) => {
-      console.log('Mensaje desde el servidor', message);
-
-      // Aquí puedes realizar acciones en respuesta a los mensajes del servidor
-      if (message.type === 'someMessageType') {
-        this.handleSomeMessageType(message.data);
-      }
-    });
-  }
-
-  handleSomeMessageType(data: any): void {
-    switch (data.messageType) {
-      case 'UpdateUserInfo':
-        // Realiza acciones específicas para actualizar la información del usuario
-        console.log('Actualizando información del usuario:', data.userData);
-        break;
-      
-      case 'NewNotification':
-        // Realiza acciones específicas para manejar una nueva notificación
-        console.log('Nueva notificación recibida:', data.notification);
-        break;
-  
-      default:
-        // Tipo de mensaje no reconocido
-        console.warn('Tipo de mensaje no reconocido:', data);
-        break;
-    }
+    // Initialize WebSocket connection
+    this.socket$ = webSocket('ws://localhost:8083/ws'); 
   }
 
   ngOnInit() {
@@ -130,15 +105,17 @@ export class MenuUnroutedComponent implements OnInit {
         baseZIndex: 10000,
         maximizable: false
       });
+      this.socket$.next({ type: 'custom-event'});
     }
     return false;
-    //$event.preventDefault
   }
 
   changeSiteLanguage(language: Language): void {
     this.oTranslocoService.setActiveLang(language.code);
   }
 
+  ngOnDestroy() {
+    this.socket$.complete(); 
+  }
+
 }
-
-

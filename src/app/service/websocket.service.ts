@@ -6,18 +6,16 @@ import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
   providedIn: 'root'
 })
 export class WebsocketService {
-  connect() {
-      throw new Error('Method not implemented.');
-  }
   private socket$: WebSocketSubject<any> | undefined;
   private messagesSubject = new Subject<any>();
 
   constructor() {
     this.setupWebSocket();
+    this.connect();
   }
 
   private setupWebSocket(): void {
-    this.socket$ = webSocket('ws://localhost:8080');
+    this.socket$ = webSocket('ws://localhost:8083/ws');
 
     this.socket$.subscribe(
       (message) => this.messagesSubject.next(message),
@@ -27,6 +25,10 @@ export class WebsocketService {
         this.setupWebSocket(); // Reconnect on close
       }
     );
+  }
+  
+  private connect(): void {
+    this.socket$ = webSocket('ws://localhost:8083/ws'); // Cambia la URL según tu configuración
   }
 
   public getMessages(): Observable<any> {

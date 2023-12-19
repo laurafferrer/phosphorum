@@ -16,11 +16,6 @@ export class ThreadAjaxService {
         private oHttpClient: HttpClient,
         private websocketService: WebsocketService
     ) { 
-        this.setupWebsocket();
-    }
-
-    private setupWebsocket() {
-        this.websocketService.connect();
     }
 
     getOne(id: number): Observable<IThread> {

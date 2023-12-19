@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
 import { IThread } from 'src/app/model/model.interfaces';
-import { WebsocketService } from 'src/app/service/websocket.service';
+import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 
 
 
@@ -16,31 +16,43 @@ export class HomeRoutedComponent implements OnInit {
 
   idThread: number = 0;
   reloadThreads: Subject<boolean> = new Subject<boolean>();
+  private socket$: WebSocketSubject<any>;
 
-  constructor(private websocketService: WebsocketService) { }
+  constructor() {
+
+    this.socket$ = webSocket('ws://localhost:8083/ws');
+
+    this.socket$.subscribe(
+      (message: WebSocketMessage) => {
+        // Handle incoming WebSocket messages
+        console.log('WebSocket message received:', message);
+    
+        // Example: Trigger a thread reload when a message is received
+        if (message.type === 'threadUpdate') {
+          this.reloadThreads.next(true);
+        }
+      },
+      (error: WebSocketErrorEvent) => {
+        console.error('WebSocket error:', error);
+      },
+      () => {
+        console.log('WebSocket connection closed');
+      }
+    );
+
+    // Define los tipos para los mensajes WebSocket
+    interface WebSocketMessage {
+      type: string;
+      // Agrega otros campos según la estructura de tus mensajes
+    }
+
+    // Define el tipo para eventos de error WebSocket
+    interface WebSocketErrorEvent extends Event {
+      error: any;
+    }
+   }
 
   ngOnInit() {
-    // Suscríbete a los mensajes del WebSocket
-    this.websocketService.getMessages().subscribe((message) => {
-      console.log('Mensaje desde el servidor', message);
-
-      // Aquí puedes realizar acciones en respuesta a los mensajes del servidor
-      if (message.type === 'threadChange') {
-        this.handleThreadChange(message.data);
-      } else if (message.type === 'replyChange') {
-        this.handleReplyChange();
-      }
-    });
-  }
-
-  // Método para manejar el cambio de hilo
-  handleThreadChange(threadId: number): void {
-    this.idThread = threadId;
-  }
-
-  // Método para manejar el cambio de respuesta
-  handleReplyChange(): void {
-    this.reloadThreads.next(true);
   }
 
   onThreadChange(oThread: IThread) {
@@ -49,10 +61,15 @@ export class HomeRoutedComponent implements OnInit {
 
   onReplyChange(bReply: Boolean) {
     this.reloadThreads.next(true);
+    this.socket$.next({
+      type: 'replyUpdate',
+      data: { replyChanged: bReply }
+    });
   }
+
+  ngOnDestroy() {
+    // Close the WebSocket connection when the component is destroyed
+    this.socket$.complete();
+  }
+
 }
-
-
-
-
-

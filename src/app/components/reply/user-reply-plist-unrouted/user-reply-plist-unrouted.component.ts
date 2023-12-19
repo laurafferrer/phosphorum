@@ -86,13 +86,21 @@ export class UserReplyPlistUnroutedComponent implements OnInit {
       this.getThread();
     }
 
-    // Suscríbete a los mensajes del WebSocket
-    this.oWebSocketService.getMessages().subscribe((message) => {
-      console.log('Mensaje desde el servidor', message);
+    // Subscribe to WebSocket messages
+    this.oWebSocketService.getMessages().subscribe((message: any) => {
+      console.log('WebSocket message received:', message);
 
-      // Aquí puedes realizar acciones en respuesta a los mensajes del servidor
-      if (message.type === 'someMessageType') {
-        this.handleSomeMessageType(message.data);
+      // Handle WebSocket messages here
+      if (message.type === 'updateThread') {
+        // Example: Update the list of replies when receiving a thread update message
+        console.log('Received thread update message:', message);
+        this.getPage(); // Refresh the list of replies
+      } else if (message.type === 'someOtherType') {
+        // Handle other types of messages
+        console.log('Received another type of message:', message);
+        // Perform necessary actions with the received data
+      } else {
+        console.log('Unrecognized message type:', message.type);
       }
     });
   }

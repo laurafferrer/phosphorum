@@ -1,3 +1,4 @@
+import { webSocket } from 'rxjs/webSocket';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Input, OnInit, Optional } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -17,6 +18,8 @@ export class UserReplyDetailUnroutedComponent implements OnInit {
   oReply: IReply = { user: {}, thread: {} } as IReply;
   status: HttpErrorResponse | null = null;
 
+  private webSocket!: WebSocket;
+
   constructor(
     private oReplyAjaxService: ReplyAjaxService,
     @Optional() public ref: DynamicDialogRef,
@@ -31,6 +34,7 @@ export class UserReplyDetailUnroutedComponent implements OnInit {
 
   ngOnInit() {
     this.getOne();
+    this.setupWebSocket();
   }
 
   getOne(): void {
@@ -44,6 +48,37 @@ export class UserReplyDetailUnroutedComponent implements OnInit {
 
     })
 
+  }
+
+  private setupWebSocket(): void {
+    const wsUrl = 'ws://localhost:8083/ws';
+    this.webSocket = new WebSocket(wsUrl);
+
+    this.webSocket.onopen = (event) => {
+      console.log('WebSocket connection opened:', event);
+      // You can send a message when the WebSocket connection is opened
+      // this.webSocket.send('Hello WebSocket!');
+    };
+
+    this.webSocket.onmessage = (event) => {
+      console.log('WebSocket message received:', event.data);
+      // Handle incoming WebSocket messages here
+    };
+
+    this.webSocket.onclose = (event) => {
+      console.log('WebSocket connection closed:', event);
+    };
+
+    this.webSocket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+  }
+
+  ngOnDestroy() {
+    // Close WebSocket connection when the component is destroyed
+    if (this.webSocket) {
+      this.webSocket.close();
+    }
   }
 
 }
