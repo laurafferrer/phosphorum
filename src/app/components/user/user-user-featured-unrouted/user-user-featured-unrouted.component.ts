@@ -30,13 +30,13 @@ export class UserUserFeaturedUnroutedComponent implements OnInit {
   private setupWebsocket(): void {
     this.oWebsocketService.getMessages().subscribe((message) =>{
       console.log('Mensaje desde el servidor', message);
-       // Actualiza la interfaz de usuario según el tipo de mensaje recibido
+       // Actualiza la interfaz de usuario
        if (message.type === 'updateUserList') {
-        // Ejemplo: Actualizar la lista de usuarios
-        this.oPage = message.data as IUserPage; // Asegúrate de que el mensaje contenga la información necesaria
+        // Actualizar la lista de usuarios
+        this.oPage = message.data as IUserPage;
       } else if (message.type === 'removeUser') {
-        // Ejemplo: Remover un usuario de la lista
-        const userIdToRemove = message.data.userId; // Asegúrate de que el mensaje contenga la información necesaria
+        // Remover un usuario de la lista
+        const userIdToRemove = message.data.userId;
         if (this.oPage) {
           this.oPage.content = this.oPage.content.filter(u => u.id !== userIdToRemove);
         }
