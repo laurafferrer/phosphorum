@@ -39,11 +39,6 @@ export class HomeRoutedComponent implements OnInit {
     });
   }
 
-  ngOnDestroy() {
-    // Close the WebSocket connection when the component is destroyed
-    this.socket$.complete();
-  }
-
   // Función para suscribirse a los mensajes WebSocket
   private subscribeToWebSocket(): void {
     this.socket$.subscribe(
@@ -52,7 +47,7 @@ export class HomeRoutedComponent implements OnInit {
           // Manejar mensajes WebSocket entrantes
           console.log('WebSocket message received:', message);
   
-          // Ejemplo: Disparar una recarga de hilos cuando se recibe un mensaje
+          // Recargar los threads cuando se recibe un mensaje
           if (message.type === 'threadUpdate') {
             this.reloadThreads.next(true);
           }
@@ -65,6 +60,11 @@ export class HomeRoutedComponent implements OnInit {
         }
       }
     );
+  }
+
+  ngOnDestroy() {
+    // Close the WebSocket connection when the component is destroyed
+    this.socket$.complete();
   }
   
 }
