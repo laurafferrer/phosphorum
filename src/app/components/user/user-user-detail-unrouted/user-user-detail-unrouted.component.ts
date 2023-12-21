@@ -32,7 +32,7 @@ export class UserUserDetailUnroutedComponent implements OnInit {
   ngOnInit() {
     console.log(this.id);
 
-    // Suscribirse a los mensajes del WebSocket
+     // Suscribirse a los mensajes del WebSocket
     this.oWebSocketService.getMessages().subscribe((message) => {
       console.log('Mensaje desde el servidor', message);
       // Actualiza la interfaz de usuario según el tipo de mensaje recibido
@@ -57,5 +57,4 @@ export class UserUserDetailUnroutedComponent implements OnInit {
       this.ref?.close();
     }
   }
-
 }
